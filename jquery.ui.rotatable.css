@@ -8,8 +8,12 @@
     margin-top: -48px;
 }
 
+/*
 body {
 	position: relative;
-	min-width:800px; /* suppose you want minimun width of 1000px */
+	min-width:100px; /* suppose you want minimun width of 1000px */
+	max-width: 1080px;
 	min-height: 1600px; 
 }
+
+*/
