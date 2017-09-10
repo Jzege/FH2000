@@ -1,0 +1,203 @@
+<html>
+<head>
+	<link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css">
+	<script src="http://code.jquery.com/jquery-1.11.3.js"></script>
+	<script src="http://code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+
+	<script src="jquery.ui.rotatable.js"></script>
+	<link rel="stylesheet" href="jquery.ui.rotatable.css">
+
+	<script src="jquery.ui.touch-punch.min.js"></script>
+	
+	<script type="text/javascript">
+		$(document).ready(function() {
+		
+		$barrel_old_rot = -200/3200*Math.PI
+		$pts_old_rot = 400/3200*Math.PI
+		$line_old_rot = 0
+		$step = 10/6400*360
+		
+		$('#enemy').rotatable({
+			handleOffset: {left: 355, top: -1100}, 	
+			start: function(e, ui){
+				$('#tooltip').text("Enemy")
+			},				
+		}); $('#enemy_drag').draggable()
+		
+		$('#body_drag').draggable({disabled:true})
+		
+        $('#line').rotatable({
+			angle: $line_old_rot,
+			snap: true, step: $step,
+			handleOffset: {left: 355, top: 40}, 
+			start: function(e, ui){
+				$('#tooltip').text("Mechanical Flush")
+			},			
+			rotate: function(e, ui){
+				// update line value
+				x = $barrel_old_rot/Math.PI*3200 - ui.angle.current/Math.PI*3200
+				x = Math.round(x)
+				while (x<0){
+					x = x + 6400
+				}
+				while (x>=6400){
+					x = x - 6400
+				}					
+				$('#line_value').text(x)	
+			},
+			
+			stop: function(e, ui){
+				$line_old_rot = ui.angle.current
+				//console.log($line_old_rot)
+			}
+		}); $('#line_drag').draggable({containment:"#line_lock"})
+        $('#collimator_drag').draggable({
+			start: function(){
+				$('#tooltip').text("Collimator")
+			},			
+		})
+		$('#roving_director_drag').draggable({
+			start: function(){
+				$('#tooltip').text("Roving Director")
+			},	
+		})
+		$('#pts').rotatable({		
+			snap: true, step: $step,
+			handleOffset: {left: 353, top: -400},
+			angle: $pts_old_rot,
+			start: function(e, ui){
+				$('#tooltip').text("PTS Knob")
+			},				
+			rotate: function(e, ui){
+				new_line = $line_old_rot + ui.angle.current - $pts_old_rot
+				$('#line').rotatable("angle", new_line)
+				
+				// update reading value
+				x = ui.angle.current/Math.PI*3200 + 3200 - $barrel_old_rot/Math.PI*3200
+				x = Math.round(x)
+				while (x<0){
+					x = x + 6400
+				}
+				while (x>=6400){
+					x = x - 6400
+				}					
+				$('#reading_value').text(x)
+
+				// update line value
+				x = $barrel_old_rot/Math.PI*3200 - new_line/Math.PI*3200
+				x = Math.round(x/10)*10
+				while (x<0){
+					x = x + 6400
+				}
+				while (x>6400){
+					x = x - 6400
+				}					
+				$('#line_value').text(x)				
+			},		
+			
+			stop: function(e, ui){
+				$line_old_rot = $line_old_rot + ui.angle.current - $pts_old_rot
+				$pts_old_rot = ui.angle.current
+				//console.log($pts_old_rot/Math.PI*180)
+			}					
+		
+		}) ; $('#pts_drag').draggable({containment:"#pts_lock"})
+		$('#barrel').rotatable({
+			angle: $barrel_old_rot,
+			snap: true, step: $step,
+			handleOffset: {left:349, top: -830},			
+			start: function(e, ui){
+				$('#tooltip').text("Traverse Wheel")
+			},				
+			rotate: function(e, ui){						
+				// contain angle between -30 and 30 degrees
+				if ( ui.angle.current > 20/180*Math.PI ) {
+				  ui.angle.current = 20/180*Math.PI
+				} else if (ui.angle.current < -20/180*Math.PI ) {
+				  ui.angle.current = -20/180*Math.PI
+				}
+				//console.log(($pts_old_rot + ui.angle.current - $barrel_old_rot)/Math.PI*180)
+				$('#pts').rotatable("angle", $pts_old_rot + ui.angle.current - $barrel_old_rot)
+				$('#line').rotatable("angle", $line_old_rot + ui.angle.current - $barrel_old_rot)
+				
+			}, 
+			
+			stop: function(e, ui){
+				$pts_old_rot = $pts_old_rot + ui.angle.current - $barrel_old_rot
+				$line_old_rot = $line_old_rot + ui.angle.current - $barrel_old_rot
+				$barrel_old_rot = ui.angle.current
+				//console.log($barrel_old_rot/Math.PI*180)
+			}			
+			
+		}) ; $('#barrel_drag').draggable({containment:"#barrel_lock"})
+		
+		$('#pts >.ui-rotatable-handle').css({"background-image":"url(assets/pts_knob.png)"});  
+		$('#barrel >.ui-rotatable-handle').css("background-image", "url(assets/traverse.png)");  
+		$('#line >.ui-rotatable-handle').css({"background-image":"url(assets/mechanical_flush.png)"});  
+		$('#enemy >.ui-rotatable-handle').css({"background-image":"url(assets/enemy_cursor.png)"});  
+		
+		//only rotation handle images can be clicked
+		$('.ui-rotatable-handle').css({"pointer-events":"auto"});  
+		
+		});
+	</script>
+</head>
+<body>
+
+<div id="tooltip" style="position:relative; top:1%; font-size:5em; font-family:sans-serif; text-align:center; pointer-events:none;"></div>	
+
+<div id="line_lock" style="position:fixed; top:60%; left:55%; margin-left:-355px; margin-top:-355px;">
+<div id="line_drag">
+    <div id="line" style="width:710px; height:710px;">
+      <img src="assets/line.png">
+    </div>
+</div>
+</div>
+
+<div style="position:fixed; top:60%; left:55%; margin-left:-355px; margin-top:-355px; pointer-events:none;">
+<div id="enemy_drag">
+    <div id="enemy" style="width:710px; height:710px;">
+		<img src="assets/enemy.png">	
+    </div>
+</div>
+</div>
+
+<div style="position:fixed; top:60%; left:55%; margin-left:-355px; margin-top:-355px; pointer-events:none;">
+<div id="body_drag">
+    <div id="body" style="width:710px; height:710px;">
+		<img src="assets/body.png">	
+    </div>
+</div>
+</div>
+
+<div id="barrel_lock" style="position:fixed; top:60%; left:55%; margin-left:-355px; margin-top:-355px; pointer-events:none;">
+<div id="barrel_drag">
+    <div id="barrel" style="width:710px; height:710px; font-size:2.2em; font-family:sans-serif;">
+      <img src="assets/barrel.png" style="position:relative;">
+	  <div id="line_value" style="position:relative; left:318px; top:-690px;">LINE</div>
+    </div>
+</div>
+</div> 
+
+<div id="pts_lock" style="position:fixed; top:60%; left:55%; margin-left:-355px; margin-top:-355px; pointer-events:none;">
+<div id="pts_drag">
+    <div id="pts" style="width:710px; height:710px; font-size:1.8em; font-family:sans-serif;">
+		<img src="assets/pts.png" style="position:relative;">
+		<div id="reading_value" style="position:relative; left:322px; top:-205px; color:FF0000">RDG</div>				
+  </div>
+</div>
+</div>
+
+<div id="collimator_drag" style="position:fixed; top:50%; left:10%;">
+    <div id="collimator" style="">
+      <img src="assets/collimator.png">
+    </div>
+</div>
+<div id="roving_director_drag" style="position:fixed; top:10%; left:10%;">
+    <div id="roving_director" style="">
+      <img src="assets/jeep.png">
+    </div>
+</div>	
+	
+</body>
+</html>
