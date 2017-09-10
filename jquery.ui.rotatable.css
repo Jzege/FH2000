@@ -8,7 +8,8 @@
     margin-top: -48px;
 }
 
-body{
-   min-width:1080px; /* suppose you want minimun width of 1000px */
-   min-height: 1920px; 
+body {
+	position: relative;
+	min-width:800px; /* suppose you want minimun width of 1000px */
+	min-height: 1600px; 
 }
